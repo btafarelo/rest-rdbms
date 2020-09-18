@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "07ce14d6-b1e1-4859-b7b9-4fc522d3cbf4",
-		"name": "Self Storage",
+		"name": "REST-RDBMS",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
