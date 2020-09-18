@@ -1,0 +1,241 @@
+{
+	"info": {
+		"_postman_id": "07ce14d6-b1e1-4859-b7b9-4fc522d3cbf4",
+		"name": "Self Storage",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "dc270c90-fb28-4507-aaf1-c24ad6426445",
+						"exec": [
+							"const date = new Date();",
+							"pm.environment.set('currentDate', date.toISOString().split(\"T\")[0]);",
+							"pm.variables.get(\"$randomDatePast\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{$randomFullName}}\",\n    \"birthdate\": \"{{currentDate}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Address",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0896f567-197b-43ed-b3f0-9753e7949332",
+						"exec": [
+							"var zipCode = \"\";",
+							"",
+							"for(var i=0; i<8; i++)",
+							"    zipCode += Math.floor((Math.random() * 9) + 1);",
+							"",
+							"pm.environment.set('zipCode', zipCode);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_id\": \"0\",\n    \"street\": \"{{$randomStreetName}}\",\n    \"number\": \"{{$randomInt}}\",\n    \"city\": \"{{$randomCity}}\",\n    \"zip_code\": \"{{zipCode}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/addresses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Address By Id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "dca47de0-feff-4ee0-9880-4b41e5a95a2f",
+						"exec": [
+							"var zipCode = \"\";",
+							"",
+							"for(var i=0; i<8; i++)",
+							"    zipCode += Math.floor((Math.random() * 9) + 1);",
+							"",
+							"pm.environment.set('zipCode', zipCode);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/addresses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Address",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "19435e30-53d3-470d-b1e8-299afbdef469",
+						"exec": [
+							"var zipCode = \"\";",
+							"",
+							"for(var i=0; i<8; i++)",
+							"    zipCode += Math.floor((Math.random() * 9) + 1);",
+							"",
+							"pm.environment.set('zipCode', zipCode);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "user_id",
+							"value": "0",
+							"type": "text"
+						},
+						{
+							"key": "street",
+							"value": "{{$randomStreetName}}",
+							"type": "text"
+						},
+						{
+							"key": "number",
+							"value": "{{$randomInt}}",
+							"type": "text"
+						},
+						{
+							"key": "city",
+							"value": "{{$randomCity}}",
+							"type": "text"
+						},
+						{
+							"key": "zip_code",
+							"value": "{{zipCode}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/addresses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addresses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User By Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/users/0",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"users",
+						"0"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
