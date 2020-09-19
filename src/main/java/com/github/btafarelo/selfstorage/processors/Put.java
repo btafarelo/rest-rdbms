@@ -1,18 +1,38 @@
 package com.github.btafarelo.selfstorage.processors;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import com.github.btafarelo.selfstorage.jdbc.Datasource;
 
-@WebServlet
-public class Put extends HttpServlet {
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+public class Put {
 
+    private static final String SQL = "update %s set %s where id = ?";
+
+    private String schema;
+
+    private String table;
+
+    public Put(String schema, String table) {
+        this.schema = schema;
+        this.table = table;
+    }
+
+    public void doPut(final Map<String, String> input, final long id) {
+
+        final StringBuilder params = new StringBuilder();
+
+        for(Iterator i = input.keySet().iterator(); i.hasNext(); ) {
+            params.append(i.next());
+            params.append("=?");
+
+            if (i.hasNext())
+                params.append(", ");
+        }
+
+        input.put("id", "" + id);
+
+        Datasource.execute(String.format(SQL, table, params), input);
     }
 }

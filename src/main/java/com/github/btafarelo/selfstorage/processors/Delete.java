@@ -1,18 +1,28 @@
 package com.github.btafarelo.selfstorage.processors;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-@WebServlet
-public class Delete extends HttpServlet {
+import com.github.btafarelo.selfstorage.jdbc.Datasource;
 
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+import java.util.HashMap;
+import java.util.Map;
 
+public class Delete {
+
+    private static final String SQL = "delete from %s where id = ?";
+
+    private String schema;
+
+    private String table;
+
+    public Delete(String schema, String table) {
+        this.schema = schema;
+        this.table = table;
+    }
+
+    public void doDelete(final long id) {
+        Map<String, String> input = new HashMap<>();
+        input.put("id", "" + id);
+
+        Datasource.execute(String.format(SQL, table), input);
     }
 }

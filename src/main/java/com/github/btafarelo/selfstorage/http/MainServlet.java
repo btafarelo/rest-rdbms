@@ -1,8 +1,10 @@
 package com.github.btafarelo.selfstorage.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.btafarelo.selfstorage.processors.Delete;
 import com.github.btafarelo.selfstorage.processors.Get;
 import com.github.btafarelo.selfstorage.processors.Post;
+import com.github.btafarelo.selfstorage.processors.Put;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -49,8 +51,6 @@ public class MainServlet extends HttpServlet {
             throws IOException {
 
         List result = null;
-        
-        resp.setContentType("application/json");
 
         final Get get = new Get(schema, table);
 
@@ -60,8 +60,37 @@ public class MainServlet extends HttpServlet {
             result = get.doGet();
         }
 
+        resp.setContentType("application/json");
+
         if (result != null)
             objectMapper.writeValue(resp.getOutputStream(), result);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws  IOException {
+
+        Post post = new Post(schema, table);
+
+        post.doPost(getContent(req), resp.getOutputStream());
+
+        resp.setStatus(201);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
+        isGetById(req);
+
+        Delete delete = new Delete(schema, table);
+        delete.doDelete(id);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        isGetById(req);
+
+        Put put = new Put(schema, table);
+        put.doPut(getContent(req), id);
     }
 
     private boolean isGetById(HttpServletRequest req) {
@@ -74,15 +103,6 @@ public class MainServlet extends HttpServlet {
         }
 
         return result;
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws  IOException {
-
-        Post post = new Post(schema, table);
-
-        post.doPost(getContent(req), resp.getOutputStream());
     }
 
     private Map getContent(HttpServletRequest req) throws IOException {
