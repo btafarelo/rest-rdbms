@@ -36,14 +36,14 @@ public class Datasource {
         return ds.getConnection();
     }
 
-    public static void execute(final String sql, final Map<String, String> input) {
+    public static int execute(final String sql, final Map<String, String> input) {
         Connection cnn = null;
 
         try {
             try {
                 final Matcher matcher = PARAM_NAME.matcher(sql);
 
-                List<String> paramList = new ArrayList<>();
+                final List<String> paramList = new ArrayList<>();
 
                 while (matcher.find())
                     paramList.add(matcher.group(1));
@@ -53,10 +53,12 @@ public class Datasource {
                 final PreparedStatement stmt = cnn.prepareStatement(
                         matcher.replaceAll( "?"));
 
-                for (int i=0; i < paramList.size(); i++)
+                final int count = stmt.getParameterMetaData().getParameterCount();
+
+                for (int i=0; i < count; i++)
                     stmt.setString(i+1, input.get(paramList.get(i)));
 
-                stmt.execute();
+                return stmt.executeUpdate();
             } finally {
                 if (cnn != null)
                     cnn.close();
@@ -64,6 +66,8 @@ public class Datasource {
         } catch (SQLException | NamingException e) {
             e.printStackTrace();
         }
+
+        return -1;
     }
 
     public static List<Map<String, Object>> query(final String sql,
@@ -100,14 +104,14 @@ public class Datasource {
         return result;
     }
 
-    public static void execute(final String sql) {
+    public static int execute(final String sql) {
         Connection cnn = null;
 
         try {
             try {
                 cnn = Datasource.getConnection();
 
-                cnn.prepareStatement(sql).execute();
+                return cnn.prepareStatement(sql).executeUpdate();
             } finally {
                 if (cnn != null)
                     cnn.close();
@@ -115,5 +119,7 @@ public class Datasource {
         } catch (SQLException | NamingException e) {
             e.printStackTrace();
         }
+
+        return -1;
     }
 }

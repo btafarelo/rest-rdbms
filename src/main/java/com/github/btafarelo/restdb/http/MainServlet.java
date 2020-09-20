@@ -63,6 +63,8 @@ public class MainServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws  IOException {
 
+        req.getMethod();
+
         Datasource.execute(Database.SQL.get(
                 input.getTableName()).get("INSERT"), input.getParams());
 
