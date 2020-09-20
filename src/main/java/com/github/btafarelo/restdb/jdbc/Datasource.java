@@ -1,4 +1,4 @@
-package com.github.btafarelo.selfstorage.jdbc;
+package com.github.btafarelo.restdb.jdbc;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -7,18 +7,26 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Datasource {
+
+    private static final Logger LOG = Logger.getLogger(Datasource.class.getName());
+
+    private static final Pattern PARAM_NAME = Pattern.compile(":([^ |,|\\)]+)");
 
     private static DataSource ds;
 
     private Datasource() {
     }
 
-    private static Connection getConnection() throws NamingException, SQLException {
+    static Connection getConnection() throws NamingException, SQLException {
 
         if (ds == null) {
             Context ctx = new InitialContext();
@@ -33,16 +41,20 @@ public class Datasource {
 
         try {
             try {
+                final Matcher matcher = PARAM_NAME.matcher(sql);
+
+                List<String> paramList = new ArrayList<>();
+
+                while (matcher.find())
+                    paramList.add(matcher.group(1));
+
                 cnn = Datasource.getConnection();
 
-                PreparedStatement stmt = cnn.prepareStatement(sql);
+                final PreparedStatement stmt = cnn.prepareStatement(
+                        matcher.replaceAll( "?"));
 
-                int x = 1;
-
-                for (Iterator i = input.keySet().iterator(); i.hasNext(); ) {
-                    final String value = input.get(i.next());
-                    stmt.setString(x++, value);
-                }
+                for (int i=0; i < paramList.size(); i++)
+                    stmt.setString(i+1, input.get(paramList.get(i)));
 
                 stmt.execute();
             } finally {

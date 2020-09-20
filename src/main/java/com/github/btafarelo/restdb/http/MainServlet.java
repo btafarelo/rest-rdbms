@@ -1,10 +1,9 @@
-package com.github.btafarelo.selfstorage.http;
+package com.github.btafarelo.restdb.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.btafarelo.selfstorage.processors.Delete;
-import com.github.btafarelo.selfstorage.processors.Get;
-import com.github.btafarelo.selfstorage.processors.Post;
-import com.github.btafarelo.selfstorage.processors.Put;
+import com.github.btafarelo.restdb.jdbc.Database;
+import com.github.btafarelo.restdb.jdbc.Datasource;
+import com.github.btafarelo.restdb.processors.Get;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,12 +25,8 @@ public class MainServlet extends HttpServlet {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String schema;
-
-    private String table;
-
-    private long id;
-
+    private Input input;
+    
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -40,9 +34,9 @@ public class MainServlet extends HttpServlet {
         if ("POST".equals(req.getMethod()))
             if (!"application/json".equals(req.getContentType()))
                 resp.sendError(400, "Content type not allowed.");
-
-        table = req.getPathInfo().split("/")[1];
-
+            
+        this.input = new Input(req);
+            
         super.service(req, resp);
     }
 
@@ -52,17 +46,16 @@ public class MainServlet extends HttpServlet {
 
         List result = null;
 
-        final Get get = new Get(schema, table);
+        final Get get = new Get(input);
 
-        if (isGetById(req)) {
-            result = get.doGet(id);
-        } else {
+        if (isGetById(req))
+            result = get.doGetById();
+        else
             result = get.doGet();
-        }
 
         resp.setContentType("application/json");
 
-        if (result != null)
+        if (result != null && !result.isEmpty())
             objectMapper.writeValue(resp.getOutputStream(), result);
     }
 
@@ -70,42 +63,27 @@ public class MainServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws  IOException {
 
-        Post post = new Post(schema, table);
-
-        post.doPost(getContent(req), resp.getOutputStream());
+        Datasource.execute(Database.SQL.get(
+                input.getTableName()).get("INSERT"), input.getParams());
 
         resp.setStatus(201);
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
-        isGetById(req);
-
-        Delete delete = new Delete(schema, table);
-        delete.doDelete(id);
+        Datasource.execute(Database.SQL.get(
+                input.getTableName()).get("DELETE"), input.getParams());
     }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        isGetById(req);
-
-        Put put = new Put(schema, table);
-        put.doPut(getContent(req), id);
+        Datasource.execute(Database.SQL.get(
+                input.getTableName()).get("UPDATE"), input.getParams());
     }
 
     private boolean isGetById(HttpServletRequest req) {
-        boolean result = false;
-
         final Matcher matcher = FIND_BY_ID_REGEX.matcher(req.getPathInfo());
 
-        if ((result = matcher.matches())) {
-            id = Long.parseLong(matcher.group(2));
-        }
-
-        return result;
-    }
-
-    private Map getContent(HttpServletRequest req) throws IOException {
-        return objectMapper.readValue(req.getInputStream(), Map.class);
+        return matcher.matches();
     }
 }

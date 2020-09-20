@@ -8,7 +8,9 @@
         url="jdbc:hsqldb:mem:db"
         username="username"
         password="password"
-        maxActive="-1"
-        removeAbandoned="true" />
+        maxTotal="-1"
+        initialSize="100"
+        removeAbandonedOnBorrow="true"
+        removeAbandonedOnMaintenance="true" />
 
 </Context>

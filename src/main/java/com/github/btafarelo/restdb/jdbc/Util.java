@@ -1,4 +1,4 @@
-package com.github.btafarelo.selfstorage.jdbc;
+package com.github.btafarelo.restdb.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
