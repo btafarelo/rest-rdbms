@@ -2,6 +2,7 @@ package com.github.btafarelo.restdb.jdbc;
 
 import javax.naming.NamingException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

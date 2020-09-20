@@ -85,28 +85,8 @@ public class Datasource {
                 cnn = Datasource.getConnection();
 
                 final StringBuilder sql = new StringBuilder();
-                sql.append(Database.SQL.get(input.getTableName()).
-                        get(input.getMethod()));
 
-                Iterator<String> it = input.getParams().keySet().iterator();
-
-                if (it.hasNext()) {
-                    sql.append(" where ");
-
-                    String name = null;
-
-                    while (it.hasNext()) {
-                        name = it.next();
-
-                        sql.append(name);
-                        sql.append("=:");
-                        sql.append(name);
-
-                        if (it.hasNext()) {
-                            sql.append(" and ");
-                        }
-                    }
-                }
+                prepareSQL(input, sql);
 
                 final Matcher matcher = PARAM_NAME.matcher(sql);
 
@@ -137,5 +117,31 @@ public class Datasource {
         }
 
         return result;
+    }
+
+    private static void prepareSQL(Input input, StringBuilder sql) {
+        final String method = input.getMethod();
+
+        sql.append(Database.SQL.get(input.getTableName()).get(method));
+
+        if (!"GET".equals(method))
+            return;
+
+        Iterator<String> it = input.getParams().keySet().iterator();
+
+        if (it.hasNext()) {
+            sql.append(" where ");
+
+            String name;
+
+            while (it.hasNext()) {
+                name = it.next();
+
+                sql.append(String.format("%s = :%s", name, name));
+
+                if (it.hasNext())
+                    sql.append(" and ");
+            }
+        }
     }
 }
