@@ -17,9 +17,13 @@ public class Input {
 
     private final String tableName;
 
+    private final String method;
+
     private final Map<String, String> params;
 
     public Input(final HttpServletRequest request) throws IOException {
+        method = request.getMethod();
+
         tableName = request.getPathInfo().split("\\/")[1];
 
         if (request.getInputStream().available() > 0)
@@ -35,6 +39,10 @@ public class Input {
 
     public String getTableName() {
         return tableName;
+    }
+
+    public String getMethod() {
+        return method;
     }
 
     public Map<String, String> getParams() {

@@ -1,5 +1,7 @@
 package com.github.btafarelo.restdb.jdbc;
 
+import com.github.btafarelo.restdb.http.Input;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -27,7 +29,6 @@ public class Datasource {
     }
 
     static Connection getConnection() throws NamingException, SQLException {
-
         if (ds == null) {
             Context ctx = new InitialContext();
             ds = (DataSource) ctx.lookup("java:/comp/env/jdbc/MyDB");
@@ -36,11 +37,14 @@ public class Datasource {
         return ds.getConnection();
     }
 
-    public static int execute(final String sql, final Map<String, String> input) {
+    public static int execute(final Input input) {
         Connection cnn = null;
 
         try {
             try {
+                final String sql = Database.SQL.get(input.getTableName()).
+                        get(input.getMethod());
+
                 final Matcher matcher = PARAM_NAME.matcher(sql);
 
                 final List<String> paramList = new ArrayList<>();
@@ -56,7 +60,7 @@ public class Datasource {
                 final int count = stmt.getParameterMetaData().getParameterCount();
 
                 for (int i=0; i < count; i++)
-                    stmt.setString(i+1, input.get(paramList.get(i)));
+                    stmt.setString(i+1, input.getParams().get(paramList.get(i)));
 
                 return stmt.executeUpdate();
             } finally {
@@ -70,8 +74,7 @@ public class Datasource {
         return -1;
     }
 
-    public static List<Map<String, Object>> query(final String sql,
-            final Map<String, String> input) {
+    public static List<Map<String, Object>> query(final Input input) {
 
         List<Map<String, Object>> result = null;
 
@@ -81,15 +84,47 @@ public class Datasource {
             try {
                 cnn = Datasource.getConnection();
 
-                PreparedStatement stmt = cnn.prepareStatement(sql);
+                final StringBuilder sql = new StringBuilder();
+                sql.append(Database.SQL.get(input.getTableName()).
+                        get(input.getMethod()));
 
-                if (input != null) {
-                    int x = 1;
+                Iterator<String> it = input.getParams().keySet().iterator();
 
-                    for (Iterator it = input.keySet().iterator(); it.hasNext();) {
-                        final String value = input.get(it.next());
-                        stmt.setString(x++, value);
+                if (it.hasNext()) {
+                    sql.append(" where ");
+
+                    String name = null;
+
+                    while (it.hasNext()) {
+                        name = it.next();
+
+                        sql.append(name);
+                        sql.append("=:");
+                        sql.append(name);
+
+                        if (it.hasNext()) {
+                            sql.append(" and ");
+                        }
                     }
+                }
+
+                final Matcher matcher = PARAM_NAME.matcher(sql);
+
+                final List<String> paramList = new ArrayList<>();
+
+                while (matcher.find())
+                    paramList.add(matcher.group(1));
+
+                cnn = Datasource.getConnection();
+
+                final PreparedStatement stmt = cnn.prepareStatement(
+                        matcher.replaceAll( "?"));
+
+                final int count = stmt.getParameterMetaData().getParameterCount();
+
+                for (int i=1 ; i<=count;) {
+                    String value = input.getParams().get(paramList.get(i-1));
+                    stmt.setString(i++, value);
                 }
 
                 result = Util.resultSetToMap(stmt.executeQuery());
@@ -102,24 +137,5 @@ public class Datasource {
         }
 
         return result;
-    }
-
-    public static int execute(final String sql) {
-        Connection cnn = null;
-
-        try {
-            try {
-                cnn = Datasource.getConnection();
-
-                return cnn.prepareStatement(sql).executeUpdate();
-            } finally {
-                if (cnn != null)
-                    cnn.close();
-            }
-        } catch (SQLException | NamingException e) {
-            e.printStackTrace();
-        }
-
-        return -1;
     }
 }

@@ -44,8 +44,10 @@ public class Database {
             while (reader.ready())
                 script.append(reader.readLine());
 
+            final Connection cnn = Datasource.getConnection();
+
             for(String s : script.toString().split(";"))
-                Datasource.execute(s);
+                cnn.createStatement().execute(s);
 
             prepareSQL();
         } catch(Exception ex) {
@@ -73,10 +75,10 @@ public class Database {
             updateSet = columns.replaceAll("([^,]+)", "$1 = :$1");
 
             operations = new HashMap<>();
-            operations.put("SELECT", format(SELECT, table));
+            operations.put("GET", format(SELECT, table));
             operations.put("DELETE", format(DELETE, table));
-            operations.put("INSERT", format(INSERT, table, columns, insertValues));
-            operations.put("UPDATE", format(UPDATE, table, updateSet));
+            operations.put("POST", format(INSERT, table, columns, insertValues));
+            operations.put("PUT", format(UPDATE, table, updateSet));
 
             SQL.put(table.toLowerCase(), operations);
 
